@@ -1,0 +1,7 @@
+chromadb==0.5.23
+fastapi==0.115.6
+google-genai==1.38.0
+httpx==0.28.1
+pydantic-settings==2.7.1
+python-multipart==0.0.20
+uvicorn[standard]==0.34.0

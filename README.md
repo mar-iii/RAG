@@ -71,17 +71,45 @@ flowchart LR
 | --- | --- | --- |
 | API | Receives uploads and questions | FastAPI |
 | Ingestion | Parses and chunks documents | Text files first |
-| Embeddings | Converts text into vectors | OpenAI embeddings |
+| Embeddings | Converts text into vectors | Gemini embeddings |
 | Retrieval | Finds relevant chunks | ChromaDB similarity search |
-| Generation | Produces a grounded answer | OpenAI chat model |
+| Generation | Produces a grounded answer | Gemini chat model |
 | Security | Protects API endpoints | API key in the MVP |
 | Enterprise controls | Restricts data access | Planned for Phase 3 |
 
-## Deliberately Out of Scope for Now
+## Phase 1 MVP Status
 
-- Application code
-- Database setup
-- Authentication implementation
+The initial implementation includes:
+
+- FastAPI application and versioned API routes
+- API-key protection through the `X-API-Key` header
+- UTF-8 `.txt` and `.md` document uploads
+- Configurable fixed-size text chunking
+- Gemini embeddings and chat generation
+- Persistent ChromaDB storage
+- Query responses containing grounded answers and source documents
+
+The following remain intentionally deferred:
+
 - PDF and DOCX parsing
-- RBAC and multi-tenant permissions
-- Deployment configuration
+- JWT, RBAC, and multi-tenant permissions
+- Background ingestion jobs
+- Production deployment and observability
+
+## Local Environment Setup
+
+1. Copy `.env.example` to `.env`.
+2. Replace `API_KEY` and `GEMINI_API_KEY` with secret values.
+3. Keep `.env` local; it is excluded by `.gitignore`.
+4. Start the API with:
+
+   ```powershell
+   uvicorn app.main:app --reload
+   ```
+
+5. Open `http://127.0.0.1:8000/` in a browser, upload a `.txt` or `.md`
+   document, and ask a question about it.
+
+The dashboard uses server-side proxy routes, so it does not ask for or expose
+the local `API_KEY` or the Gemini provider key. Direct API clients must still
+send `X-API-Key` to the `/api/v1/` routes.
