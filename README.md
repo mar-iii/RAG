@@ -70,28 +70,35 @@ flowchart LR
 | Area | Responsibility | Initial implementation |
 | --- | --- | --- |
 | API | Receives uploads and questions | FastAPI |
-| Ingestion | Parses and chunks documents | Text files first |
+| Ingestion | Parses and chunks documents | TXT, Markdown, PDF, and Excel |
 | Embeddings | Converts text into vectors | Gemini embeddings |
 | Retrieval | Finds relevant chunks | ChromaDB similarity search |
 | Generation | Produces a grounded answer | Gemini chat model |
 | Security | Protects API endpoints | API key in the MVP |
 | Enterprise controls | Restricts data access | Planned for Phase 3 |
 
-## Phase 1 MVP Status
+## Phase 2 Document Ingestion
 
 The initial implementation includes:
 
 - FastAPI application and versioned API routes
 - API-key protection through the `X-API-Key` header
 - UTF-8 `.txt` and `.md` document uploads
+- Text-based `.pdf` document uploads
+- `.xlsx`, `.xlsm`, and legacy `.xls` spreadsheet uploads
 - Configurable fixed-size text chunking
 - Gemini embeddings and chat generation
 - Persistent ChromaDB storage
 - Query responses containing grounded answers and source documents
+- Upload size validation with a configurable 25 MB default
+
+PDF pages are converted to text with `pypdf`. Spreadsheet rows are converted
+to labeled text sections containing their sheet names and cell values. Scanned
+PDFs with no text layer require OCR and are rejected with a clear message.
 
 The following remain intentionally deferred:
 
-- PDF and DOCX parsing
+- OCR for scanned PDFs
 - JWT, RBAC, and multi-tenant permissions
 - Background ingestion jobs
 - Production deployment and observability
@@ -107,8 +114,8 @@ The following remain intentionally deferred:
    uvicorn app.main:app --reload
    ```
 
-5. Open `http://127.0.0.1:8000/` in a browser, upload a `.txt` or `.md`
-   document, and ask a question about it.
+5. Open `http://127.0.0.1:8000/` in a browser, upload a `.txt`, `.md`, `.pdf`,
+   `.xlsx`, `.xlsm`, or `.xls` document, and ask a question about it.
 
 The dashboard uses server-side proxy routes, so it does not ask for or expose
 the local `API_KEY` or the Gemini provider key. Direct API clients must still

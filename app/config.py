@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     chroma_collection_name: str = "enterprise_docs"
     chunk_size: int = 1000
     chunk_overlap: int = 150
+    max_upload_size_mb: int = 25
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

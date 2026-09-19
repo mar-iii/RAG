@@ -2,7 +2,11 @@ from uuid import uuid4
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
-from app.api.v1.endpoints.ingest import split_text
+from app.services.document_ingestion import (
+    SUPPORTED_EXTENSIONS,
+    prepare_document,
+    split_text,
+)
 from app.schemas.pydantic_models import IngestResponse, QueryRequest, QueryResponse, SourceDocument
 from app.services.llm_service import llm_service
 from app.services.vector_store import vector_store
@@ -12,24 +16,25 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 @router.post("/ingest/", response_model=IngestResponse)
 async def dashboard_ingest(file: UploadFile = File(...)) -> IngestResponse:
-    if not file.filename or not file.filename.lower().endswith((".txt", ".md")):
+    if not file.filename:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail="Only .txt and .md files are supported in Phase 1",
+            detail=f"Supported file types: {', '.join(SUPPORTED_EXTENSIONS)}",
         )
 
-    content = (await file.read()).decode("utf-8")
-    chunks = split_text(content)
-    if not chunks:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The uploaded document is empty",
-        )
+    try:
+        document = prepare_document(file.filename, await file.read())
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
+    chunks = split_text(document.text)
     embeddings = llm_service.embed(chunks)
     vector_store.add_documents(
         texts=chunks,
-        metadatas=[{"source": file.filename} for _ in chunks],
+        metadatas=[
+            {"source": document.filename, "file_type": document.file_type}
+            for _ in chunks
+        ],
         ids=[str(uuid4()) for _ in chunks],
         embeddings=embeddings,
     )

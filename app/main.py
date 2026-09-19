@@ -39,7 +39,8 @@ def dashboard() -> str:
     <h1>Enterprise RAG Dashboard</h1>
     <section>
       <h2>Ingest document</h2>
-      <input id="file" type="file" accept=".txt,.md,text/plain,text/markdown">
+      <input id="file" type="file"
+             accept=".txt,.md,.pdf,.xlsx,.xlsm,.xls,text/plain,application/pdf">
       <button id="upload">Upload and index</button>
       <div id="upload-status" class="status"></div>
     </section>
