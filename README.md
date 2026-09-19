@@ -113,3 +113,37 @@ The following remain intentionally deferred:
 The dashboard uses server-side proxy routes, so it does not ask for or expose
 the local `API_KEY` or the Gemini provider key. Direct API clients must still
 send `X-API-Key` to the `/api/v1/` routes.
+
+## Internal Docker Deployment
+
+Docker Compose packages the API and its Python dependencies consistently for
+another internal machine. The deployment machine needs Docker Desktop or Docker
+Engine and a local `.env` file; do not commit that file.
+
+1. Clone the repository on the deployment machine.
+2. Create `.env` from `.env.example` and set `API_KEY` and `GEMINI_API_KEY`.
+3. Build and start the service:
+
+   ```powershell
+   docker compose up --build -d
+   ```
+
+4. Check the service health:
+
+   ```powershell
+   docker compose ps
+   Invoke-WebRequest http://127.0.0.1:8000/health
+   ```
+
+5. Open `http://127.0.0.1:8000/` locally, or replace `127.0.0.1` with the
+   deployment machine's private IP for another machine on the same network.
+
+ChromaDB is stored in the named `chroma_data` volume and survives container
+restarts. Use `docker compose logs -f` to inspect service logs and
+`docker compose down` to stop the service. Do not use `docker compose down -v`
+unless you intentionally want to delete the indexed vector data.
+
+This deployment is intended for a trusted internal network. The dashboard
+proxy deliberately hides the API key from the browser, but it currently does
+not provide per-user login. Before public exposure, add dashboard
+authentication, HTTPS, rate limiting, and an enterprise secret manager.

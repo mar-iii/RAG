@@ -99,3 +99,8 @@ def dashboard() -> str:
   </script>
 </body>
 </html>"""
+
+
+@app.get("/health", tags=["health"])
+def health() -> dict[str, str]:
+    return {"status": "healthy"}
